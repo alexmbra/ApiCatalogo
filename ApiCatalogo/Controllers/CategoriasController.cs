@@ -17,11 +17,11 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Categoria>> Categorias()
+    public async Task<ActionResult<IEnumerable<Categoria>>> Categorias()
     {
         try
         {            
-            return _context.Categorias.Take(10).AsNoTracking().ToList();
+            return await _context.Categorias.Take(10).AsNoTracking().ToListAsync();
         }
         catch (Exception)
         {
@@ -30,14 +30,14 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet("produtos")]
-    public ActionResult<IEnumerable<Categoria>> CategoriasWProdutos()
+    public async Task<ActionResult<IEnumerable<Categoria>>> CategoriasWProdutos()
     {
         try
         {
-            return _context.Categorias
+            return await _context.Categorias
                 .Include(p => p.Produtos).Where(c => c.CategoriaId <= 5)
                 .AsNoTracking()
-                .ToList();
+                .ToListAsync();
         }
         catch (Exception)
         {
@@ -45,12 +45,12 @@ public class CategoriasController : ControllerBase
         }
     }
 
-    [HttpGet("{id:int}", Name = "ObterCategoria")]
-    public ActionResult<Categoria> Categoria(int id)
+    [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
+    public async Task<ActionResult<Categoria>> Categoria(int id)
     {
         try
         {
-            var categoria = _context.Categorias.AsNoTracking().FirstOrDefault(c => c.CategoriaId == id);
+            var categoria = await _context.Categorias.AsNoTracking().FirstOrDefaultAsync(c => c.CategoriaId == id);
             if (categoria is null)
             {
                 return NotFound($"Categoria {id} não encontrada...");
@@ -65,7 +65,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult NovaCategoria(Categoria categoria)
+    public async Task<ActionResult> NovaCategoria(Categoria categoria)
     {
         try
         {
@@ -75,7 +75,7 @@ public class CategoriasController : ControllerBase
             }
 
             _context.Categorias.Add(categoria);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction("Categoria", new { id = categoria.CategoriaId }, categoria);
         }
@@ -86,8 +86,8 @@ public class CategoriasController : ControllerBase
        
     }
 
-    [HttpPut("{id:int}")]
-    public ActionResult Update(int id, Categoria categoria)
+    [HttpPut("{id:int:min(1)}")]
+    public async Task<ActionResult> Update(int id, Categoria categoria)
     {
         try
         {
@@ -97,7 +97,7 @@ public class CategoriasController : ControllerBase
             }
 
             _context.Entry(categoria).State = EntityState.Modified;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(categoria);
         }
@@ -108,8 +108,8 @@ public class CategoriasController : ControllerBase
         
     }
 
-    [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    [HttpDelete("{id:int:min(1)}")]
+    public async Task<ActionResult> Delete(int id)
     {
         try
         {
@@ -121,7 +121,7 @@ public class CategoriasController : ControllerBase
 
             _context.Entry(categoria).State = EntityState.Deleted;
             //_context.Categorias.Remove(categoria);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(categoria);
         }

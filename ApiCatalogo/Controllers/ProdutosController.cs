@@ -36,13 +36,34 @@ public class ProdutosController : ControllerBase
         }
     }
 
-    //[HttpGet("{id:int}", Name="ObterProduto")]
-    [HttpGet("{id:int}")]
-    public ActionResult<Produto> Produto(int id)
+    [HttpGet("primeiro")]
+    //[HttpGet("/primeiro")]
+    //[HttpGet("{valor:alpha:length(5)}")]
+    public async Task<ActionResult<Produto>> GetPrimeiro()
     {
         try
         {
-            var produto = _context.Produtos.AsNoTracking().FirstOrDefault(p => p.ProdutoId == id);
+            var produto = await _context.Produtos.FirstOrDefaultAsync();
+            if (produto is null)
+            {
+                return NotFound();
+            }
+
+            return produto;
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
+        }
+    }
+
+    //[HttpGet("{id:int}/{nome}", Name="ObterProduto")]
+    [HttpGet("{id:int:min(1)}")]
+    public async Task<ActionResult<Produto>> Produto(int id)
+    {
+        try
+        {
+            var produto = await _context.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.ProdutoId == id);
             if (produto is null)
             {
                 return NotFound($"Produto {id} não encontrado!");
@@ -57,7 +78,7 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Post(Produto produto)
+    public async Task<ActionResult> Post(Produto produto)
     {
         try
         {
@@ -67,7 +88,7 @@ public class ProdutosController : ControllerBase
             }
 
             _context.Produtos.Add(produto);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction("Produto", new { id = produto.ProdutoId }, produto);
             //return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
@@ -78,8 +99,8 @@ public class ProdutosController : ControllerBase
         }
     }
 
-    [HttpPut("{id:int}")]
-    public ActionResult Put(int id, Produto produto)
+    [HttpPut("{id:int:min(1)}")]
+    public async Task<ActionResult> Put(int id, Produto produto)
     {
         try
         {
@@ -89,7 +110,7 @@ public class ProdutosController : ControllerBase
             }
 
             _context.Entry(produto).State = EntityState.Modified;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(produto);
         }
@@ -99,8 +120,8 @@ public class ProdutosController : ControllerBase
         }
     }
 
-    [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    [HttpDelete("{id:int:min(1)}")]
+    public async Task<ActionResult> Delete(int id)
     {
         try
         {
@@ -111,7 +132,7 @@ public class ProdutosController : ControllerBase
             }
 
             _context.Produtos.Remove(produto);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(produto);
         }
