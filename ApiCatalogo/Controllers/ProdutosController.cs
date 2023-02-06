@@ -1,6 +1,7 @@
 ﻿using ApiCatalogo.Context;
 using ApiCatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiCatalogo.Controllers;
@@ -78,7 +79,7 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Post(Produto produto)
+    public async Task<ActionResult> Post([FromBody]Produto produto)
     {
         try
         {
@@ -86,6 +87,11 @@ public class ProdutosController : ControllerBase
             {
                 return BadRequest("Dados inválidos");
             }
+
+            //if (!ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
             _context.Produtos.Add(produto);
             await _context.SaveChangesAsync();

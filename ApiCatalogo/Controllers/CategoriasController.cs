@@ -1,5 +1,6 @@
 ﻿using ApiCatalogo.Context;
 using ApiCatalogo.Models;
+using ApiCatalogo.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +10,21 @@ namespace ApiCatalogo.Controllers;
 [ApiController]
 public class CategoriasController : ControllerBase
 {
-    public readonly AppDbContext _context;
+    private readonly AppDbContext _context;
 
     public CategoriasController(AppDbContext context)
     {
-        _context = context; 
+        _context = context;
     }
+
+    [HttpGet("saudacao/{nome}")]
+    public ActionResult<string> GetFromService([FromServices] IMeuServico meuServico, string nome)
+    {
+        return meuServico.Saudacao(nome);
+    }
+
+
+
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Categoria>>> Categorias()
