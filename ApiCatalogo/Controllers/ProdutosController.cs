@@ -1,4 +1,5 @@
 ﻿using ApiCatalogo.Context;
+using ApiCatalogo.Filters;
 using ApiCatalogo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -19,6 +20,7 @@ public class ProdutosController : ControllerBase
 
 
     [HttpGet]
+    [ServiceFilter(typeof(ApiLoggingFilter))]
     public async Task<ActionResult<IEnumerable<Produto>>> Produtos()
     {
         try
@@ -62,6 +64,8 @@ public class ProdutosController : ControllerBase
     [HttpGet("{id:int:min(1)}")]
     public async Task<ActionResult<Produto>> Produto(int id)
     {
+       
+
         try
         {
             var produto = await _context.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.ProdutoId == id);

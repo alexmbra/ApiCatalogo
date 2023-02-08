@@ -11,10 +11,12 @@ namespace ApiCatalogo.Controllers;
 public class CategoriasController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<CategoriasController> _logger;
 
-    public CategoriasController(AppDbContext context)
+    public CategoriasController(AppDbContext context, ILogger<CategoriasController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     [HttpGet("saudacao/{nome}")]
@@ -44,6 +46,7 @@ public class CategoriasController : ControllerBase
     {
         try
         {
+            _logger.LogInformation(" ================= GET api/categorias/produtos=================");
             return await _context.Categorias
                 .Include(p => p.Produtos).Where(c => c.CategoriaId <= 5)
                 .AsNoTracking()
@@ -60,9 +63,11 @@ public class CategoriasController : ControllerBase
     {
         try
         {
+            _logger.LogInformation($" ================= GET api/categorias/id = {id}=================");
             var categoria = await _context.Categorias.AsNoTracking().FirstOrDefaultAsync(c => c.CategoriaId == id);
             if (categoria is null)
             {
+                _logger.LogInformation($" ================= GET api/categorias/id = {id} NOT FOUND=================");
                 return NotFound($"Categoria {id} não encontrada...");
             }
 

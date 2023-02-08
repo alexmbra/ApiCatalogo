@@ -1,4 +1,7 @@
 using ApiCatalogo.Context;
+using ApiCatalogo.Extensions;
+using ApiCatalogo.Filters;
+using ApiCatalogo.Logging;
 using ApiCatalogo.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
@@ -24,7 +27,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 builder.Services.AddTransient<IMeuServico, MeuServico>();
+builder.Services.AddScoped<ApiLoggingFilter>();
 
+builder.Logging.AddProvider(new CustomLoggerProvider(new CustomeLoggerProviderConfiguration
+{
+    logLevel = LogLevel.Information
+}));
 
 
 var app = builder.Build();
@@ -36,6 +44,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();    
 }
+
+app.ConfigureExceptionHandler();
 
 app.UseHttpsRedirection();
 
