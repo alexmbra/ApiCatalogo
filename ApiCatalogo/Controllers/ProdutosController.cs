@@ -88,11 +88,6 @@ public class ProdutosController : ControllerBase
                 return BadRequest("Dados inválidos");
             }
 
-            //if (!ModelState.IsValid)
-            //{
-            //    return BadRequest(ModelState);
-            //}
-
             _context.Produtos.Add(produto);
             await _context.SaveChangesAsync();
 
