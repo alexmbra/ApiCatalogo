@@ -10,7 +10,7 @@ public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
     {
     }
 
-    public IEnumerable<Categoria> GetCategoriasProdutos()
+    public IEnumerable<Categoria> GetCategoriascProdutos()
     {
         return Get().Include(x => x.Produtos);
     }
