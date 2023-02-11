@@ -1,5 +1,7 @@
-﻿using ApiCatalogo.Models;
+﻿using ApiCatalogo.DTOs;
+using ApiCatalogo.Models;
 using ApiCatalogo.Repository;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiCatalogo.Controllers;
@@ -9,21 +11,30 @@ namespace ApiCatalogo.Controllers;
 public class ProdutosController : ControllerBase
 {
     private readonly IUnitOfWork _uow;
+    private readonly IMapper _mapper;
 
-    public ProdutosController(IUnitOfWork uow)
+    public ProdutosController(IUnitOfWork uow, IMapper mapper)
     {
         _uow = uow;
+        _mapper = mapper;
     }
 
     [HttpGet("menorpreco")]
-    public ActionResult<IEnumerable<Produto>> GetProdutosPorPreco()
+    public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosPorPreco()
     {
-        return _uow.ProdutoRepository.GetProutosPorPreco().ToList();
+        var produtos = _uow.ProdutoRepository.GetProutosPorPreco().ToList();
+        if (produtos is null)
+        {
+            return NotFound();
+        }
+
+        var produtoDTOs = _mapper.Map<List<ProdutoDTO>>(produtos);
+        return produtoDTOs;
     }
 
 
     [HttpGet]
-    public ActionResult<IEnumerable<Produto>> Produtos()
+    public ActionResult<IEnumerable<ProdutoDTO>> Produtos()
     {
         try
         {
@@ -33,7 +44,9 @@ public class ProdutosController : ControllerBase
                 return NotFound();
             }
 
-            return produtos;
+            var produtoDTOs = _mapper.Map<List<ProdutoDTO>>(produtos);
+
+            return produtoDTOs;
         }
         catch (Exception)
         {
@@ -44,7 +57,7 @@ public class ProdutosController : ControllerBase
     [HttpGet("primeiro")]
     //[HttpGet("/primeiro")]
     //[HttpGet("{valor:alpha:length(5)}")]
-    public ActionResult<Produto> GetPrimeiro()
+    public ActionResult<ProdutoDTO> GetPrimeiro()
     {
         try
         {
@@ -54,7 +67,9 @@ public class ProdutosController : ControllerBase
                 return NotFound();
             }
 
-            return produto;
+            var produtoDTO = _mapper.Map<ProdutoDTO>(produto);
+
+            return produtoDTO;
         }
         catch (Exception)
         {
@@ -64,7 +79,7 @@ public class ProdutosController : ControllerBase
 
     //[HttpGet("{id:int}/{nome}", Name="ObterProduto")]
     [HttpGet("{id:int:min(1)}")]
-    public ActionResult<Produto> Produto(int id)
+    public ActionResult<ProdutoDTO> Produto(int id)
     {
         try
         {
@@ -74,7 +89,9 @@ public class ProdutosController : ControllerBase
                 return NotFound($"Produto {id} não encontrado!");
             }
 
-            return produto;
+            var produtoDTO = _mapper.Map<ProdutoDTO>(produto);
+
+            return produtoDTO;
         }
         catch (Exception)
         {
@@ -83,19 +100,22 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Post([FromBody]Produto produto)
+    public ActionResult Post([FromBody] ProdutoDTO produtoDTO)
     {
         try
         {
-            if (produto is null)
+            if (produtoDTO is null)
             {
                 return BadRequest("Dados inválidos");
             }
 
+            var produto = _mapper.Map<Produto>(produtoDTO);
+            produto.DataCadastro = DateTime.Now;
+
             _uow.ProdutoRepository.Add(produto);
             _uow.Commit();
 
-            return CreatedAtAction("Produto", new { id = produto.ProdutoId }, produto);
+            return CreatedAtAction("Produto", new { id = produto.ProdutoId }, produtoDTO);
             //return new CreatedAtRouteResult("ObterProduto", new { id = produto.ProdutoId }, produto);
         }
         catch (Exception)
@@ -105,14 +125,16 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPut("{id:int:min(1)}")]
-    public ActionResult Put(int id, Produto produto)
+    public ActionResult Put(int id, ProdutoDTO produtoDTO)
     {
         try
         {
-            if (id != produto.ProdutoId)
+            if (id != produtoDTO.ProdutoId)
             {
                 return BadRequest("Dados inválidos");
             }
+
+            var produto = _mapper.Map<Produto>(produtoDTO);
 
             _uow.ProdutoRepository.Update(produto);
             _uow.Commit();
@@ -126,7 +148,7 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpDelete("{id:int:min(1)}")]
-    public ActionResult Delete(int id)
+    public ActionResult<ProdutoDTO> Delete(int id)
     {
         try
         {
@@ -139,7 +161,9 @@ public class ProdutosController : ControllerBase
             _uow.ProdutoRepository.Delete(produto);
             _uow.Commit();
 
-            return Ok(produto);
+            var produtoDTO = _mapper.Map<ProdutoDTO>(produto);
+
+            return Ok(produtoDTO);
         }
         catch (Exception)
         {

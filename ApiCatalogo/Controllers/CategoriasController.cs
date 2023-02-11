@@ -1,6 +1,8 @@
-﻿using ApiCatalogo.Models;
+﻿using ApiCatalogo.DTOs;
+using ApiCatalogo.Models;
 using ApiCatalogo.Repository;
 using ApiCatalogo.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiCatalogo.Controllers;
@@ -10,10 +12,12 @@ namespace ApiCatalogo.Controllers;
 public class CategoriasController : ControllerBase
 {
     private readonly IUnitOfWork _uow;
+    private readonly IMapper _mapper;
 
-    public CategoriasController(IUnitOfWork uow)
+    public CategoriasController(IUnitOfWork uow, IMapper mapper)
     {
         _uow = uow;
+        _mapper = mapper;
     }
 
     [HttpGet("saudacao/{nome}")]
@@ -22,15 +26,41 @@ public class CategoriasController : ControllerBase
         return meuServico.Saudacao(nome);
     }
 
+    [HttpGet("produtos")]
+    public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasWProdutos()
+    {
+        try
+        {
+            var categorias = _uow.CategoriaRepository.GetCategoriascProdutos().ToList();
+            if (categorias is null)
+            {
+                return NotFound();
+            }
 
+            var CategoriaDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
+
+            return CategoriaDTO;
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
+        }
+    }
 
 
     [HttpGet]
-    public ActionResult<IEnumerable<Categoria>> Categorias()
+    public ActionResult<IEnumerable<CategoriaDTO>> Categorias()
     {
         try
-        {            
-            return  _uow.CategoriaRepository.Get().ToList();
+        {    
+            var categorias = _uow.CategoriaRepository.Get().ToList();
+            if (categorias is null)
+            {
+                return NotFound();
+            }
+
+            var categoriasDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
+            return categoriasDTO;
         }
         catch (Exception)
         {
@@ -38,22 +68,10 @@ public class CategoriasController : ControllerBase
         }        
     }
 
-    [HttpGet("produtos")]
-    public ActionResult<IEnumerable<Categoria>> CategoriasWProdutos()
-    {
-        try
-        {
-            return _uow.CategoriaRepository.GetCategoriasProdutos()
-                .ToList();
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
-        }
-    }
+    
 
     [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
-    public ActionResult<Categoria> Categoria(int id)
+    public ActionResult<CategoriaDTO> Categoria(int id)
     {
         try
         {
@@ -63,7 +81,9 @@ public class CategoriasController : ControllerBase
                 return NotFound($"Categoria {id} não encontrada...");
             }
 
-            return categoria;
+            var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria);
+
+            return categoriaDTO;
         }
         catch (Exception)
         {
@@ -72,19 +92,21 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult NovaCategoria(Categoria categoria)
+    public ActionResult NovaCategoria(CategoriaDTO categoriaDTO)
     {
         try
         {
-            if (categoria is null)
+            if (categoriaDTO is null)
             {
                 return BadRequest("Dados inválidos");
             }
 
+            var categoria = _mapper.Map<Categoria>(categoriaDTO);
+
             _uow.CategoriaRepository.Add(categoria);
             _uow.Commit();
 
-            return CreatedAtAction("Categoria", new { id = categoria.CategoriaId }, categoria);
+            return CreatedAtAction("Categoria", new { id = categoria.CategoriaId }, categoriaDTO);
         }
         catch (Exception)
         {
@@ -94,14 +116,16 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPut("{id:int:min(1)}")]
-    public ActionResult Update(int id, Categoria categoria)
+    public ActionResult Update(int id, CategoriaDTO categoriaDTO)
     {
         try
         {
-            if (id != categoria.CategoriaId)
+            if (id != categoriaDTO.CategoriaId)
             {
                 return BadRequest("Dados inválidos");
             }
+
+            var categoria = _mapper.Map<Categoria>(categoriaDTO);
 
             _uow.CategoriaRepository.Update(categoria);
             _uow.Commit();
@@ -116,7 +140,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpDelete("{id:int:min(1)}")]
-    public ActionResult Delete(int id)
+    public ActionResult<CategoriaDTO> Delete(int id)
     {
         try
         {
@@ -129,7 +153,9 @@ public class CategoriasController : ControllerBase
             _uow.CategoriaRepository.Delete(categoria);
             _uow.Commit();
 
-            return Ok(categoria);
+            var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria);
+
+            return Ok(categoriaDTO);
         }
         catch (Exception)
         {

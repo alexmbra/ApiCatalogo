@@ -14,4 +14,5 @@ public class CategoriaRepository : Repository<Categoria>, ICategoriaRepository
     {
         return Get().Include(x => x.Produtos);
     }
+
 }
