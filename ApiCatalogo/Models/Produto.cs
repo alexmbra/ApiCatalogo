@@ -24,6 +24,7 @@ public class Produto : IValidatableObject
     public string? ImagemUrl { get; set; }
 
     [Required]
+    [DataType(DataType.Currency)]
     [Column(TypeName = "decimal(10,2)")]
     [Range(1, 10000, ErrorMessage ="O preço deve estar entre {1} e {2}")]
     public decimal Preco { get; set; }
@@ -34,7 +35,7 @@ public class Produto : IValidatableObject
 
     public int CategoriaId { get; set; }
 
-    [JsonIgnore]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Categoria? Categoria { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
