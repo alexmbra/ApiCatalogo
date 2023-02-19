@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -29,7 +30,28 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title="APICatalogo", Version="v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "APICatalogo",
+        Version = "v1",
+        Description = "Catálogo de produtos e Categorias",
+        TermsOfService = new Uri("https://www.faketermlink.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Alex Mesquita",
+            Email = "alexmbra@hotmail.com",
+            Url = new Uri("https://www.mysite.com")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Usar sobre LICX",
+            Url = new Uri("https://www.faketermlink.com/license")
+        }
+    }) ;
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 
     c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme()
     {

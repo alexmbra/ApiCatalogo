@@ -8,12 +8,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
 
-namespace ApiCatalogo.Controllers;
+namespace ApiCatalogo.Controllers.v1;
 
+[Produces("application/json")]
+[ApiConventionType(typeof(DefaultApiConventions))]
 [ApiVersion("1.0")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Route("api/[controller]")]
+[Route("api/v{v:apiVersion}/[controller]")]
 [ApiController]
 public class CategoriasController : ControllerBase
 {
@@ -35,6 +38,10 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet("produtos")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetCategoriasWProdutos()
     {
         try
@@ -57,6 +64,10 @@ public class CategoriasController : ControllerBase
 
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Categorias([FromQuery] CategoriasParameters categoriasParameters)
     {
         try
@@ -85,17 +96,25 @@ public class CategoriasController : ControllerBase
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
-        }        
+        }
     }
 
-    
 
+    /// <summary>
+    /// Obter  uma categoria pelo seu id
+    /// </summary>
+    /// <param name="id">código da Categoria</param>
+    /// <returns>Objectos Categoria</returns>
     [HttpGet("{id:int:min(1)}", Name = "ObterCategoria")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult<CategoriaDTO>> Categoria(int id)
     {
         try
         {
-            var categoria =  await _uow.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
+            var categoria = await _uow.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
             if (categoria is null)
             {
                 return NotFound($"Categoria {id} não encontrada...");
@@ -108,11 +127,31 @@ public class CategoriasController : ControllerBase
         catch (Exception)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
-        }        
+        }
     }
 
+    /// <summary>
+    /// Inclui uma nova categoria
+    /// </summary>
+    /// <remarks>
+    /// Exemplo de request:
+    /// 
+    ///     POST api/v1/categorias
+    ///     {
+    ///         "categoriaId": 1,
+    ///         "nome": "categoria1",
+    ///         "imagemUrl": "http://teste.net/1.jpg"
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="categoriaDTO">object catgoria</param>
+    /// <returns>O objeto Categoria incluido</returns>
     [HttpPost]
-    public async Task<ActionResult> NovaCategoria(CategoriaDTO categoriaDTO)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+    [ProducesDefaultResponseType]
+    public async Task<ActionResult> NovaCategoria([FromBody]CategoriaDTO categoriaDTO)
     {
         try
         {
@@ -140,10 +179,14 @@ public class CategoriasController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
         }
-       
+
     }
 
     [HttpPut("{id:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult> Update(int id, CategoriaDTO categoriaDTO)
     {
         try
@@ -164,7 +207,7 @@ public class CategoriasController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
         }
-        
+
     }
 
     [HttpDelete("{id:int:min(1)}")]
@@ -190,6 +233,6 @@ public class CategoriasController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tratar a sua solicitação");
         }
     }
-   
+
 
 }

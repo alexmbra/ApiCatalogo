@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiCatalogo.Controllers;
+namespace ApiCatalogo.Controllers.v2;
 
+[Produces("application/json")]
 [ApiVersion("2.0")]
 [Route("api/v{v:apiVersion}/test")]
 [ApiController]
