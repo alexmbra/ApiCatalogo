@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace ApiCatalogo.Controllers.v1;
 
@@ -37,6 +38,26 @@ public class CategoriasController : ControllerBase
         return meuServico.Saudacao(nome);
     }
 
+    /// <summary>
+    /// Retorna uma coleção de objetos Categoria
+    /// </summary>
+    /// <returns>Lista de Categorias</returns>
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get()
+    {
+        try
+        {
+            var categorias = await _uow.CategoriaRepository.Get().ToListAsync();
+            var categoriasDto = _mapper.Map<List<CategoriaDTO>>(categorias);
+            //throw new Exception();
+            return categoriasDto;
+        }
+        catch (Exception)
+        {
+            return BadRequest();
+        }
+    }
+
     [HttpGet("produtos")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -54,7 +75,7 @@ public class CategoriasController : ControllerBase
 
             var CategoriaDTO = _mapper.Map<List<CategoriaDTO>>(categorias);
 
-            return CategoriaDTO;
+            return Ok(CategoriaDTO);
         }
         catch (Exception)
         {
@@ -68,7 +89,7 @@ public class CategoriasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     [ProducesDefaultResponseType]
-    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Categorias([FromQuery] CategoriasParameters categoriasParameters)
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetPaginacao([FromQuery] CategoriasParameters categoriasParameters)
     {
         try
         {
@@ -117,7 +138,8 @@ public class CategoriasController : ControllerBase
             var categoria = await _uow.CategoriaRepository.GetByIdAsync(c => c.CategoriaId == id);
             if (categoria is null)
             {
-                return NotFound($"Categoria {id} não encontrada...");
+                //return NotFound($"Categoria {id} não encontrada...");
+                return NotFound();
             }
 
             var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria);
@@ -151,7 +173,7 @@ public class CategoriasController : ControllerBase
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     [ProducesDefaultResponseType]
-    public async Task<ActionResult> NovaCategoria([FromBody]CategoriaDTO categoriaDTO)
+    public async Task<ActionResult> Post([FromBody]CategoriaDTO categoriaDTO)
     {
         try
         {
@@ -226,7 +248,7 @@ public class CategoriasController : ControllerBase
 
             var categoriaDTO = _mapper.Map<CategoriaDTO>(categoria);
 
-            return Ok(categoriaDTO);
+            return categoriaDTO;
         }
         catch (Exception)
         {
