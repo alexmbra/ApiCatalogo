@@ -174,6 +174,10 @@ public class ProdutosController : ControllerBase
     }
 
     [HttpPut("{id:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+    [ProducesDefaultResponseType]
     public async Task<ActionResult> Put(int id, ProdutoDTO produtoDTO)
     {
         try

@@ -12,19 +12,25 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
-using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    //options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
-    //options.JsonSerializerOptions.WriteIndented = true;
-    //options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-});
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    //options.JsonSerializerOptions.IgnoreReadOnlyProperties = true;
+//    //options.JsonSerializerOptions.WriteIndented = true;
+//    //options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+//    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+//});
+
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+ {
+     options.SerializerSettings.ReferenceLoopHandling
+       = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+ });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

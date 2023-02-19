@@ -1,7 +1,7 @@
-﻿using ApiCatalogo.Validation;
+﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+
 
 namespace ApiCatalogo.Models;
 
@@ -35,7 +35,6 @@ public class Produto : IValidatableObject
 
     public int CategoriaId { get; set; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Categoria? Categoria { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
