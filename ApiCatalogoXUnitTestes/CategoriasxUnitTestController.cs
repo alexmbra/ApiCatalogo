@@ -80,8 +80,10 @@ public class CategoriasxUnitTestController
     }
 
     //GET retornar lista de categorias
-    [Fact]
-    public async Task GetCategorias_MatchResult()
+    [Theory]
+    [InlineData("Bebidas", "bebidas.jpg", 0)]
+    [InlineData("Sobremesas", "Sobremesas.jpg", 2)]
+    public async Task GetCategorias_MatchResult(string a, string b, int indexDB)
     {
         //Arrange
         var controller = new CategoriasController(_uow, _mapper);
@@ -94,12 +96,19 @@ public class CategoriasxUnitTestController
 
         var cat = data.Value.Should().BeAssignableTo<List<CategoriaDTO>>().Subject;
 
-        Assert.Equal("Bebidas", cat[0].Nome);
-        Assert.Equal("bebidas.jpg", cat[0].ImagemUrl);
+        Assert.Equal(a, cat[indexDB].Nome);
+        Assert.Equal(b, cat[indexDB].ImagemUrl);
 
-        Assert.Equal("Sobremesas", cat[2].Nome);
-        Assert.Equal("Sobremesas.jpg", cat[2].ImagemUrl);
+        Assert.Equal(a, cat[indexDB].Nome);
+        Assert.Equal(b, cat[indexDB].ImagemUrl);
     }
+
+
+
+
+
+   
+
 
     //Get cat por Id - retorna categoriaDTO
     [Fact]
@@ -194,4 +203,6 @@ public class CategoriasxUnitTestController
 
 
     }
+
+
 }
